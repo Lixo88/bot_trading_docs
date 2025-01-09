@@ -105,6 +105,9 @@ bot_trading/
       - Initialize connections to REST API and WebSocket.
       - Pull historical data for each symbol and timeframe.
       - Listen to live updates for time-sensitive strategies.
+  - Output:
+      - Provides WebSocket data directly to `processing.py` for real-time calculations (e.g., 15M indicators).
+      - Stores API data in `db/operations.py` for further processing by `processing.py`.
   ```
 
   ### processing.py
@@ -125,6 +128,9 @@ bot_trading/
       - **15M Indicators:**
           - ATR (5): Validates volatility for breakout detection.
           - Volume Spike: Flags anomalies in market activity.
+  - Input:
+      - **1D, 4H, 1H data:** Retrieved from `db/operations.py`.
+      - **15M data:** Received directly from `fetching.py` via WebSocket.
   - Structures data for `strategies` in a clean, usable format.
   - Examples of Output:
       - Processed candle data with calculated indicators.
@@ -143,6 +149,8 @@ bot_trading/
       - Candle data for different symbols and timeframes.
       - Precomputed indicators for historical analysis.
   - Supports efficient queries for `strategies` and `backtesting`.
+  - Output:
+      - Provides stored data (e.g., 1D, 4H, 1H candles) to `processing.py` for indicator calculation.
   ```
 
   ### schema.sql
