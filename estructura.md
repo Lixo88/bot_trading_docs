@@ -101,6 +101,7 @@ bot_trading/
   ```plaintext
   - Fetches data from the API and WebSocket (1D, 4H, 1H, 15M).
   - Handles rate limits and monitoring to ensure compliance with Binance API policies.
+  - At first will take BTC/USDT, later on addig more symbols. For 1.0.0 the pairs will be hardcoded and not selected. Future version may have dynamic and manual selection
   - Key Responsibilities:
       - Initialize connections to REST API and WebSocket.
       - Pull historical data for each symbol and timeframe.
@@ -108,6 +109,10 @@ bot_trading/
   - Output:
       - Provides WebSocket data directly to `processing.py` for real-time calculations (e.g., 15M indicators).
       - Stores API data in `db/operations.py` for further processing by `processing.py`.
+  - Notes:
+      - Fetching will store all temporalities (1D, 4H, 1H, 15M) in `db/candles`.
+      - Adds one candle at a time for the corresponding timeframe.
+      - Data for 15M is passed directly to `processing.py` for immediate calculations.
   ```
 
   ### processing.py
@@ -131,9 +136,11 @@ bot_trading/
   - Input:
       - **1D, 4H, 1H data:** Retrieved from `db/operations.py`.
       - **15M data:** Received directly from `fetching.py` via WebSocket.
-  - Structures data for `strategies` in a clean, usable format.
-  - Examples of Output:
-      - Processed candle data with calculated indicators.
+  - Output:
+      - Indicators calculated for all temporalities (1D, 4H, 1H, 15M) and stored in `db/indicators`.
+      - Data flow:
+          - **Primary:** Processed indicators saved to `db/indicators`.
+          - **Secondary (real-time):** Certain indicators for 15M could flow directly to `strategies/` to reduce latency when necessary.
   ```
 
 </details>
@@ -151,6 +158,10 @@ bot_trading/
   - Supports efficient queries for `strategies` and `backtesting`.
   - Output:
       - Provides stored data (e.g., 1D, 4H, 1H candles) to `processing.py` for indicator calculation.
+      - Supplies indicators from `db/indicators` to `strategies/` for event detection and decision-making.
+  - Additional Logging:
+      - Logs critical database operations such as failed inserts or updates.
+      - Optionally integrates with `utils/logging.py` for centralized logging.
   ```
 
   ### schema.sql
@@ -160,6 +171,13 @@ bot_trading/
   - Includes:
       - Tables for each symbol and timeframe.
       - Indexes for quick lookups.
+      - Triggers:
+          - Prevent duplicate candles from being inserted.
+          - Automate basic indicator calculations for simplicity in `processing.py`.
+          - Ensure referential integrity between `candles` and `indicators`.
+  - Recommendations:
+      - Use foreign keys to maintain relationships between `candles` and `indicators`.
+      - Create materialized views for complex queries in `strategies/`.
   ```
 
   ### backup.py
@@ -169,6 +187,9 @@ bot_trading/
   - Key Features:
       - Scheduled exports to prevent data loss.
       - Cloud storage support (Google Cloud, AWS S3).
+      - Rotational backup system to manage storage efficiently.
+      - Logs backup activity in `metadata` table.
+      - Notifications for failed backups to ensure reliability.
   ```
 
   ### cleaning.py
@@ -176,12 +197,22 @@ bot_trading/
   ```plaintext
   - Removes duplicates and validates data integrity.
   - Ensures consistency in candle data and computed indicators.
+  - Notes:
+      - Relies on database triggers for primary deduplication.
+      - Secondary cleaning performed to validate missing or incomplete data.
+      - Example Logic:
+          1. Identify gaps or inconsistencies in `candles` and request missing data from `fetching.py`.
+          2. Validate indicator calculations and recompute if anomalies are found.
+      - Future Improvement:
+          - Integrate with `utils/logging.py` to record anomalies detected during cleaning.
   ```
 
 </details>
 
 <details>
   <summary><strong>strategies/</strong></summary>
+
+  Input: from db/, just if necessary 15min indicators from processing.py
 
   ### core.py
 
