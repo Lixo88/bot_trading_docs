@@ -206,6 +206,45 @@ bot_trading/
       - Future Improvement:
           - Integrate with `utils/logging.py` to record anomalies detected during cleaning.
   ```
+</details>
+
+<details>
+  <summary><strong>db/</strong></summary>
+
+  ### training.py
+
+  ```plaintext
+- Handles training of machine learning models (e.g., XGBoost).
+- Key Responsibilities:
+    - Load and preprocess historical data for BTC/USDT and ETH/USDT.
+    - Train models to identify breakouts/rebotes and time to event completion.
+    - Save trained models for deployment.
+- Inputs:
+    - Historical candles and indicators from `db/operations.py`.
+    - Labels: Breakout/rebote and number of candles to event.
+- Outputs:
+    - Trained model saved locally for use by `predictions.py`.
+    - Logs of training performance and validation metrics.
+  ```
+
+  ### predictions.sql
+
+  ```plaintext
+- Generates predictions based on trained ML models.
+- Key Responsibilities:
+    - Load pre-trained models.
+    - Process live data from `data/processing.py` to classify events (e.g., breakout probability).
+    - Integrate predictions into `strategies/` for decision-making.
+- Inputs:
+    - Real-time indicators and processed candles.
+- Outputs:
+    - Event classification (breakout/rebote).
+    - Probability scores for each event type.
+- Notes:
+    - Predictions act as a filter to prioritize relevant events for `chatgpt/`.
+  ```
+
+
 
 </details>
 
