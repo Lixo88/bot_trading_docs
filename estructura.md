@@ -16,6 +16,9 @@
     - [schema.sql](#schemasql)
     - [backup.py](#backuppy)
     - [cleaning.py](#cleaningpy)
+  - [ml/](#db)
+    - [training.py](#trainingpy)
+    - [predictions.py](#predictionspy)
   - [strategies/](#strategies)
     - [core.py](#corepy)
     - [events/](#events)
@@ -51,6 +54,7 @@ bot_trading/
 ├── config/
 ├── data/
 ├── db/
+├── ml/
 ├── strategies/
 ├── chatgpt/
 ├── trading/
@@ -209,7 +213,7 @@ bot_trading/
 </details>
 
 <details>
-  <summary><strong>db/</strong></summary>
+  <summary><strong>ml/</strong></summary>
 
   ### training.py
 
@@ -227,7 +231,7 @@ bot_trading/
     - Logs of training performance and validation metrics.
   ```
 
-  ### predictions.sql
+  ### predictions.py
 
   ```plaintext
 - Generates predictions based on trained ML models.
